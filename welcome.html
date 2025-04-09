@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Welcome</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      height: 100vh;
+      background: linear-gradient(to right, #0f2027, #203a43, #2c5364); /* Deeper dark blue gradient */
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: #fff;
+    }
+
+    .dashboard {
+      background: rgba(255, 255, 255, 0.06);
+      backdrop-filter: blur(14px);
+      border-radius: 20px;
+      padding: 50px 40px;
+      width: 90%;
+      max-width: 600px;
+      text-align: center;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+    }
+
+    .logo {
+      max-width: 120px;
+      margin-bottom: 20px;
+    }
+
+    h1 {
+      font-size: 3rem;
+      margin-bottom: 10px;
+    }
+
+    p {
+      font-size: 1.3rem;
+      margin-bottom: 40px;
+      color: #e0e0e0;
+    }
+
+    .btn {
+      background: linear-gradient(to right, #00c9ff, #92fe9d);
+      color: #000;
+      padding: 15px 25px;
+      margin: 12px;
+      font-size: 1rem;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      width: 80%;
+      max-width: 300px;
+    }
+
+    .btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+    }
+  </style>
+</head>
+<body>
+  <div class="dashboard">
+    <img src="assets/tl.png" alt="TL Logo" class="logo" />
+    <h1 id="greeting">Hello!</h1>
+    <p>Welcome to TL CNG Team</p>
+
+    <button class="btn" onclick="window.open('https://docs.google.com/spreadsheets/d/10TERnTDi79Dm6reSeHjyW3qpaPaXB7rtqW-kigpFoxk/edit?usp=sharing')">Sponsorship Database</button>
+    <button class="btn" onclick="alert('Coming soon 🚧')">Weekly Tasks</button>
+    <button class="btn" onclick="scrollToGossips()">Gossips</button>
+    <button class="btn" onclick="window.open('assets/quit.jpg', '_blank')">Quit</button>
+
+
+    <div id="gossip-section" style="margin-top: 30px;">
+        <h2 style="margin-bottom: 15px;">TL Gossips 💬</h2>
+        <textarea id="gossipInput" rows="4" placeholder="Write your gossip..." style="width: 100%; padding: 10px; border-radius: 10px; resize: none;"></textarea>
+        <button onclick="postGossip()" class="btn" style="margin-top: 10px;">Post</button>
+      
+        <div id="gossipList" style="margin-top: 25px; text-align: left;"></div>
+    </div>
+
+      
+  </div>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const username = params.get("user");
+
+    if (username) {
+      document.getElementById("greeting").textContent = `Hello ${username}`;
+    }
+
+
+
+    // Gossip Feature
+
+// Load existing gossips on page load
+document.addEventListener("DOMContentLoaded", () => {
+  loadGossips();
+});
+
+function postGossip() {
+  const input = document.getElementById("gossipInput");
+  const text = input.value.trim();
+  if (text === "") return;
+
+  const existing = JSON.parse(localStorage.getItem("gossips") || "[]");
+  existing.push(text);
+  localStorage.setItem("gossips", JSON.stringify(existing));
+
+  input.value = "";
+  loadGossips();
+}
+
+function loadGossips() {
+  const container = document.getElementById("gossipList");
+  const gossips = JSON.parse(localStorage.getItem("gossips") || "[]");
+
+  if (gossips.length === 0) {
+    container.innerHTML = "<p>No gossips yet 😶</p>";
+    return;
+  }
+
+  container.innerHTML = gossips
+    .map((msg, idx) => `<p><strong>Gossip ${idx + 1}:</strong> ${msg}</p>`)
+    .join("");
+}
+function scrollToGossips() {
+  const gossipSection = document.getElementById("gossip-section");
+  if (gossipSection) {
+    gossipSection.scrollIntoView({ behavior: "smooth" });
+  }
+}
+
+
+  </script>
+</body>
+</html>
