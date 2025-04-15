@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Assign Daily Task – TL CNG</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <script type="text/javascript" src="https://cdn.emailjs.com/dist/email.min.js"></script>
+  <script>
+    (function() {
+      emailjs.init("bR04rKham9xrwtXpf");
+    })();
+  </script>
+  <style>
+    body {
+      background: #f8f9fa;
+      font-family: 'Poppins', sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      padding: 20px;
+    }
+    
+    .container {
+      background: white;
+      border-radius: 15px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      padding: 30px;
+      width: 100%;
+      max-width: 500px;
+    }
+    
+    h2 {
+      color: #2c3e50;
+      text-align: center;
+      margin-bottom: 25px;
+    }
+    
+    input, textarea {
+      width: 100%;
+      padding: 12px;
+      margin-bottom: 15px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-family: 'Poppins', sans-serif;
+    }
+    
+    textarea {
+      min-height: 120px;
+      resize: vertical;
+    }
+    
+    button {
+      width: 100%;
+      padding: 12px;
+      background-color: #2ecc71;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 16px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    
+    button:hover {
+      background-color: #27ae60;
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .success {
+      text-align: center;
+      color: #27ae60;
+      font-weight: 600;
+      margin-top: 15px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Assign Daily Task</h2>
+    <form id="taskForm">
+      <input type="text" id="name" placeholder="Student Name" required />
+      <input type="email" id="email" placeholder="Student Email" required />
+      <textarea id="task" rows="4" placeholder="Write the task..." required></textarea>
+      <button type="submit">Send Task</button>
+      <p class="success" id="successMsg" style="display:none;">✅ Email sent successfully!</p>
+    </form>
+  </div>
+
+  <script type="module">
+    import emailjs from 'https://cdn.emailjs.com/dist/email.min.mjs';
+  
+    emailjs.init("bR04rKham9xrwtXpf");
+  
+    const form = document.getElementById("taskForm");
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
+  
+      const name = document.getElementById("name").value;
+      const email = document.getElementById("email").value;
+      const task = document.getElementById("task").value;
+      const taskDate = new Date().toISOString().split('T')[0];
+      const assignedBy = new URLSearchParams(window.location.search).get("user");
+  
+      const tasks = JSON.parse(localStorage.getItem("tasks") || []);
+      tasks.push({
+        name: name,
+        email: email,
+        task: task,
+        date: taskDate,
+        assignedBy: assignedBy,
+        completed: false
+      });
+      localStorage.setItem("tasks", JSON.stringify(tasks));
+  
+      emailjs.send("service_mwj8rx8", "template_7dxq6ql", {
+        name: name,
+        email: email,
+        task: task
+      }).then(() => {
+        document.getElementById("successMsg").style.display = "block";
+        form.reset();
+        setTimeout(() => {
+          document.getElementById("successMsg").style.display = "none";
+        }, 3000);
+      }).catch((err) => {
+        alert("Failed to send email: " + err.text);
+      });
+    });
+  </script>
+</body>
+</html>
