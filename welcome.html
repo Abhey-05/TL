@@ -210,7 +210,9 @@
 
   <script>
     // Initialize EmailJS with your User ID
-    emailjs.init("YOUR_EMAILJS_USER_ID"); // Replace with your actual ID
+    emailjs.init("bR04rKham9xrwtXpf");
+    // Debug: Check all tasks in localStorage
+   
 
     // Get user info from session storage
     const currentUser = JSON.parse(sessionStorage.getItem("currentUser"));
@@ -244,63 +246,70 @@
       return new Date(dateString).toLocaleDateString(undefined, options);
     }
 
-    // Function to show tasks for regular members
     function showMyTasks() {
-      const tasks = JSON.parse(localStorage.getItem("team_tasks") || "[]");
-      const userTasks = tasks.filter(task => 
-        task.student_email.toLowerCase() === userEmail.toLowerCase()
-      );
-      
-      const taskList = document.getElementById("taskList");
-      taskList.innerHTML = "";
+  // Get all tasks from localStorage
+  const tasks = JSON.parse(localStorage.getItem("team_tasks") || "[]");
+  
+  // Debug: Show raw task data
+  console.log("All tasks:", tasks);
+  console.log("Current user email:", userEmail);
 
-      if (userTasks.length === 0) {
-        taskList.innerHTML = "<p>You have no tasks assigned yet.</p>";
-      } else {
-        // Group tasks by date
-        const tasksByDate = {};
-        userTasks.forEach(task => {
-          if (!tasksByDate[task.date_assigned]) {
-            tasksByDate[task.date_assigned] = [];
-          }
-          tasksByDate[task.date_assigned].push(task);
-        });
+  // Filter tasks for the current user (case-insensitive match)
+  const userTasks = tasks.filter(task => 
+    task.student_email && 
+    task.student_email.toLowerCase().includes(userEmail.toLowerCase())
+  );
 
-        // Display tasks grouped by date (newest first)
-        const sortedDates = Object.keys(tasksByDate).sort().reverse();
-        
-        sortedDates.forEach(date => {
-          const dateGroup = document.createElement("div");
-          dateGroup.className = "task-date-group";
-          dateGroup.innerHTML = `<h3>${formatDate(date)}</h3>`;
-          
-          tasksByDate[date].forEach(task => {
-            const taskItem = document.createElement("div");
-            taskItem.className = "task-item";
-            taskItem.innerHTML = `
-              <p><strong>${task.task_description}</strong></p>
-              <p>Assigned by: ${task.assigned_by}</p>
-              <small>Priority: 
-                <span class="task-status ${'status-' + (task.priority || 'medium')}">
-                  ${(task.priority || 'medium').toUpperCase()}
-                </span>
-              </small>
-              <br>
-              <small>Status: 
-                <span class="task-status ${task.completed ? 'status-completed' : 'status-pending'}">
-                  ${task.completed ? 'COMPLETED' : 'PENDING'}
-                </span>
-              </small>
-            `;
-            dateGroup.appendChild(taskItem);
-          });
-          
-          taskList.appendChild(dateGroup);
-        });
-      }
-      
-      document.getElementById("taskViewSection").style.display = "block";
+  console.log("Filtered tasks:", userTasks); // Debug filtered results
+
+  const taskList = document.getElementById("taskList");
+  taskList.innerHTML = "";
+
+  if (userTasks.length === 0) {
+    taskList.innerHTML = "<p>You have no tasks assigned yet.</p>";
+    return;
+  }
+
+  // Group tasks by date
+  const tasksByDate = {};
+  userTasks.forEach(task => {
+    const date = task.date_assigned || "No date";
+    if (!tasksByDate[date]) {
+      tasksByDate[date] = [];
     }
+    tasksByDate[date].push(task);
+  });
+
+  // Display tasks (newest first)
+  Object.keys(tasksByDate)
+    .sort((a, b) => new Date(b) - new Date(a)) // Sort dates descending
+    .forEach(date => {
+      const dateGroup = document.createElement("div");
+      dateGroup.className = "task-date-group";
+      dateGroup.innerHTML = `<h3>${formatDate(date)}</h3>`;
+      
+      tasksByDate[date].forEach((task, index) => {
+        const taskItem = document.createElement("div");
+        taskItem.className = "task-item";
+        taskItem.innerHTML = `
+          <p><strong>Task ${index + 1}:</strong> ${task.task_description || "No description"}</p>
+          <p>Assigned by: ${task.assigned_by || "Unknown"}</p>
+          <small>Priority: <span class="task-status status-${task.priority || 'medium'}">
+            ${(task.priority || 'medium').toUpperCase()}
+          </span></small>
+          <small>Status: <span class="task-status ${task.completed ? 'status-completed' : 'status-pending'}">
+            ${task.completed ? 'COMPLETED' : 'PENDING'}
+          </span></small>
+        `;
+        dateGroup.appendChild(taskItem);
+      });
+      
+      taskList.appendChild(dateGroup);
+    });
+
+  // Show the task section
+  document.getElementById("taskViewSection").style.display = "block";
+}
 
     // Function to post gossip
     function postGossip() {
