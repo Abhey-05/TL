@@ -5,12 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Assign Daily Task – TL CNG</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
-  <script type="text/javascript" src="https://cdn.emailjs.com/dist/email.min.js"></script>
-  <script>
-    (function() {
-      emailjs.init("bR04rKham9xrwtXpf");
-    })();
-  </script>
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
   <style>
     body {
       background: #f8f9fa;
@@ -83,54 +78,92 @@
   <div class="container">
     <h2>Assign Daily Task</h2>
     <form id="taskForm">
-      <input type="text" id="name" placeholder="Student Name" required />
-      <input type="email" id="email" placeholder="Student Email" required />
-      <textarea id="task" rows="4" placeholder="Write the task..." required></textarea>
+      <input type="text" id="student_name" placeholder="Student Name" required />
+      <input type="email" id="student_email" placeholder="Student Email" required />
+      <textarea id="task_description" rows="4" placeholder="Write the task..." required></textarea>
       <button type="submit">Send Task</button>
-      <p class="success" id="successMsg" style="display:none;">✅ Email sent successfully!</p>
+      <p class="success" id="successMsg" style="display:none;">✅ Task assigned and email sent successfully!</p>
     </form>
   </div>
 
-  <script type="module">
-    import emailjs from 'https://cdn.emailjs.com/dist/email.min.mjs';
-  
-    emailjs.init("bR04rKham9xrwtXpf");
-  
-    const form = document.getElementById("taskForm");
-    form.addEventListener("submit", function (e) {
+  <script>
+    // Debugging initialization
+    console.log("Initializing EmailJS");
+    emailjs.init("bR04rKham9xrwtXpf").then(
+      () => console.log("EmailJS initialized successfully"),
+      (err) => console.error("EmailJS init failed:", err)
+    );
+
+    document.getElementById("taskForm").addEventListener("submit", async function(e) {
       e.preventDefault();
-  
-      const name = document.getElementById("name").value;
-      const email = document.getElementById("email").value;
-      const task = document.getElementById("task").value;
-      const taskDate = new Date().toISOString().split('T')[0];
-      const assignedBy = new URLSearchParams(window.location.search).get("user");
-  
-      const tasks = JSON.parse(localStorage.getItem("tasks") || []);
-      tasks.push({
-        name: name,
-        email: email,
-        task: task,
-        date: taskDate,
-        assignedBy: assignedBy,
-        completed: false
-      });
-      localStorage.setItem("tasks", JSON.stringify(tasks));
-  
-      emailjs.send("service_mwj8rx8", "template_7dxq6ql", {
-        name: name,
-        email: email,
-        task: task
-      }).then(() => {
+      const submitBtn = document.getElementById("submitBtn");
+      const errorMsg = document.getElementById("errorMsg");
+      
+      try {
+        // Show loading state
+        submitBtn.disabled = true;
+        submitBtn.textContent = "Sending...";
+        errorMsg.style.display = "none";
+
+        // Get form values
+        const studentName = document.getElementById("student_name").value.trim();
+        const studentEmail = document.getElementById("student_email").value.trim();
+        const taskDescription = document.getElementById("task_description").value.trim();
+        const assignedBy = new URLSearchParams(window.location.search).get("user") || "Admin";
+
+        // Validate inputs
+        if (!studentName || !studentEmail || !taskDescription) {
+          throw new Error("Please fill all fields");
+        }
+
+        // Prepare task data
+        const taskDate = new Date().toISOString().split('T')[0];
+        const newTask = {
+          student_name: studentName,
+          student_email: studentEmail,
+          task_description: taskDescription,
+          date_assigned: taskDate,
+          assigned_by: assignedBy,
+          completed: false
+        };
+
+        // Save to localStorage
+        const tasks = JSON.parse(localStorage.getItem("tasks") || []);
+        tasks.push(newTask);
+        localStorage.setItem("tasks", JSON.stringify(tasks));
+        console.log("Task saved:", newTask);
+
+        // Send email
+        console.log("Attempting to send email...");
+        const emailResponse = await emailjs.send("service_mwj8rx8", "template_7dxq6ql", {
+          to_name: studentName,
+          to_email: studentEmail,
+          task_description: taskDescription,
+          assigned_by: assignedBy,
+          date_assigned: taskDate
+        });
+
+        console.log("Email sent:", emailResponse);
         document.getElementById("successMsg").style.display = "block";
-        form.reset();
+        this.reset();
+
+        // Hide success message after 3 seconds
         setTimeout(() => {
           document.getElementById("successMsg").style.display = "none";
         }, 3000);
-      }).catch((err) => {
-        alert("Failed to send email: " + err.text);
-      });
+
+      } catch (error) {
+        console.error("Error:", error);
+        errorMsg.textContent = error.message || "Failed to send task. Please try again.";
+        errorMsg.style.display = "block";
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = "Send Task";
+      }
     });
+
+    // Debugging: Check if form event listener is attached
+    console.log("Form event listener attached");
   </script>
 </body>
 </html>
