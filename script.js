@@ -2,9 +2,9 @@
 document.addEventListener("DOMContentLoaded", function() {
   // User credentials (in a real app, use proper authentication)
   const users = {
-    "Abhey": { password: "Head", isHead: true, email: "abhey@example.com" },
-    "Krati": { password: "Nimish", isHead: false, email: "krati@example.com" },
-    "Atharv": { password: "Lambu", isHead: false, email: "atharv@example.com" },
+    "Abhey": { password: "Head", isHead: true, email: "ee23btech11202@iith.ac.in" },
+    "Krati": { password: "Nimish", isHead: false, email: "ce24btech11034@iith.ac.in" },
+    "Atharv": { password: "Lambu", isHead: false, email: "ce24btech11010@iith.ac.in" },
     "Rishab": { password: "Naman", isHead: false, email: "rishab@example.com" }
   };
 

@@ -247,68 +247,70 @@
     }
 
     function showMyTasks() {
-  // Get all tasks from localStorage
-  const tasks = JSON.parse(localStorage.getItem("team_tasks") || "[]");
-  
-  // Debug: Show raw task data
-  console.log("All tasks:", tasks);
-  console.log("Current user email:", userEmail);
+  try {
+    // 1. Get tasks from localStorage (with error handling)
+    const tasks = JSON.parse(localStorage.getItem("team_tasks")) || [];
+    console.log("[Debug] Raw tasks data:", tasks); 
 
-  // Filter tasks for the current user (case-insensitive match)
-  const userTasks = tasks.filter(task => 
-    task.student_email && 
-    task.student_email.toLowerCase().includes(userEmail.toLowerCase())
-  );
-
-  console.log("Filtered tasks:", userTasks); // Debug filtered results
-
-  const taskList = document.getElementById("taskList");
-  taskList.innerHTML = "";
-
-  if (userTasks.length === 0) {
-    taskList.innerHTML = "<p>You have no tasks assigned yet.</p>";
-    return;
-  }
-
-  // Group tasks by date
-  const tasksByDate = {};
-  userTasks.forEach(task => {
-    const date = task.date_assigned || "No date";
-    if (!tasksByDate[date]) {
-      tasksByDate[date] = [];
-    }
-    tasksByDate[date].push(task);
-  });
-
-  // Display tasks (newest first)
-  Object.keys(tasksByDate)
-    .sort((a, b) => new Date(b) - new Date(a)) // Sort dates descending
-    .forEach(date => {
-      const dateGroup = document.createElement("div");
-      dateGroup.className = "task-date-group";
-      dateGroup.innerHTML = `<h3>${formatDate(date)}</h3>`;
-      
-      tasksByDate[date].forEach((task, index) => {
-        const taskItem = document.createElement("div");
-        taskItem.className = "task-item";
-        taskItem.innerHTML = `
-          <p><strong>Task ${index + 1}:</strong> ${task.task_description || "No description"}</p>
-          <p>Assigned by: ${task.assigned_by || "Unknown"}</p>
-          <small>Priority: <span class="task-status status-${task.priority || 'medium'}">
-            ${(task.priority || 'medium').toUpperCase()}
-          </span></small>
-          <small>Status: <span class="task-status ${task.completed ? 'status-completed' : 'status-pending'}">
-            ${task.completed ? 'COMPLETED' : 'PENDING'}
-          </span></small>
-        `;
-        dateGroup.appendChild(taskItem);
-      });
-      
-      taskList.appendChild(dateGroup);
+    // 2. Filter tasks for the CURRENT user (case-insensitive)
+    const userTasks = tasks.filter(task => {
+      if (!task.student_email) return false;
+      return task.student_email.toLowerCase() === userEmail.toLowerCase();
     });
 
-  // Show the task section
-  document.getElementById("taskViewSection").style.display = "block";
+    console.log("[Debug] Filtered tasks for user:", userTasks);
+
+    // 3. Display tasks
+    const taskList = document.getElementById("taskList");
+    taskList.innerHTML = "";
+
+    if (userTasks.length === 0) {
+      taskList.innerHTML = `<p>No tasks found for ${username}.</p>`;
+      return;
+    }
+
+    // 4. Group tasks by date (newest first)
+    const tasksByDate = {};
+    userTasks.forEach(task => {
+      const date = task.date_assigned || "Unknown Date";
+      if (!tasksByDate[date]) tasksByDate[date] = [];
+      tasksByDate[date].push(task);
+    });
+
+    // 5. Render tasks
+    Object.keys(tasksByDate)
+      .sort((a, b) => new Date(b) - new Date(a)) // Sort newest first
+      .forEach(date => {
+        const dateGroup = document.createElement("div");
+        dateGroup.className = "task-date-group";
+        dateGroup.innerHTML = `<h3>${formatDate(date)}</h3>`;
+
+        tasksByDate[date].forEach((task, index) => {
+          const taskItem = document.createElement("div");
+          taskItem.className = "task-item";
+          taskItem.innerHTML = `
+            <p><strong>${task.task_description || "No description"}</strong></p>
+            <p>Assigned by: ${task.assigned_by || "Unknown"}</p>
+            <small>Priority: <span class="task-status status-${task.priority || 'medium'}">
+              ${(task.priority || 'medium').toUpperCase()}
+            </span></small>
+            <small>Status: <span class="task-status ${task.completed ? 'status-completed' : 'status-pending'}">
+              ${task.completed ? 'COMPLETED' : 'PENDING'}
+            </span></small>
+          `;
+          dateGroup.appendChild(taskItem);
+        });
+
+        taskList.appendChild(dateGroup);
+      });
+
+    // 6. Show the task section
+    document.getElementById("taskViewSection").style.display = "block";
+
+  } catch (error) {
+    console.error("Error in showMyTasks():", error);
+    alert("Error loading tasks. Check console for details.");
+  }
 }
 
     // Function to post gossip
