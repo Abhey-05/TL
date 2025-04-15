@@ -1,23 +1,37 @@
-document.addEventListener("DOMContentLoaded", function () {
-  const form = document.getElementById("loginForm");
-  const errorMsg = document.getElementById("errorMsg");
-
+// script.js
+document.addEventListener("DOMContentLoaded", function() {
+  // User credentials (in a real app, use proper authentication)
   const users = {
-    "Abhey": { password: "Head", isHead: true },
-    "Krati": { password: "Nimish", isHead: false },
-    "Atharv": { password: "Lambu", isHead: false },
-    "Rishab": { password: "Naman", isHead: false }
+    "Abhey": { password: "Head", isHead: true, email: "abhey@example.com" },
+    "Krati": { password: "Nimish", isHead: false, email: "krati@example.com" },
+    "Atharv": { password: "Lambu", isHead: false, email: "atharv@example.com" },
+    "Rishab": { password: "Naman", isHead: false, email: "rishab@example.com" }
   };
 
-  form.addEventListener("submit", function (e) {
+  document.getElementById("loginForm").addEventListener("submit", function(e) {
     e.preventDefault();
     const username = document.getElementById("username").value.trim();
     const password = document.getElementById("password").value;
+    const errorMsg = document.getElementById("errorMsg");
 
     if (users[username] && users[username].password === password) {
+      // Store user data in sessionStorage
+      sessionStorage.setItem("currentUser", JSON.stringify({
+        username: username,
+        isHead: users[username].isHead,
+        email: users[username].email
+      }));
+      
       window.location.href = `welcome.html?user=${encodeURIComponent(username)}&isHead=${users[username].isHead}`;
     } else {
       errorMsg.style.display = "block";
+      setTimeout(() => errorMsg.style.display = "none", 3000);
     }
   });
 });
+
+// Shared functions
+function formatDate(dateString) {
+  const options = { year: 'numeric', month: 'long', day: 'numeric' };
+  return new Date(dateString).toLocaleDateString(undefined, options);
+}
